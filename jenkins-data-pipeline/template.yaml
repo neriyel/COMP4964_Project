@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Data Pipeline using Lambda and S3 - Infrastructure as Code
+
+Globals:
+  Function:
+    Timeout: 300
+    Runtime: python3.9
+    Environment:
+      Variables:
+        OUTPUT_BUCKET: !Ref DataPipelineOutputBucket
+        PROCESSED_PREFIX: 'processed/'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Environment name
+
+Resources:
+  # S3 Bucket for input CSV files
+  DataPipelineInputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'data-pipeline-input-${AWS::AccountId}-${Environment}'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # S3 Bucket for processed/output CSV files
+  DataPipelineOutputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'data-pipeline-output-${AWS::AccountId}-${Environment}'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # IAM Role for Lambda function
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt DataPipelineInputBucket.Arn
+                  - !Sub '${DataPipelineInputBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt DataPipelineOutputBucket.Arn
+                  - !Sub '${DataPipelineOutputBucket.Arn}/*'
+
+  # Lambda Function for CSV Processing
+  CSVProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'csv-processor-${Environment}'
+      CodeUri: src/
+      Handler: lambda_handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 300
+      MemorySize: 512
+      Environment:
+        Variables:
+          INPUT_BUCKET: !Ref DataPipelineInputBucket
+          OUTPUT_BUCKET: !Ref DataPipelineOutputBucket
+
+  # S3 Event Notification Permission for Lambda
+  S3InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CSVProcessorFunction
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !Sub 'arn:aws:s3:::${DataPipelineInputBucket}'
+
+Outputs:
+  CSVProcessorFunctionArn:
+    Description: ARN of the CSV Processor Lambda function
+    Value: !GetAtt CSVProcessorFunction.Arn
+
+  InputBucketName:
+    Description: Name of the input S3 bucket
+    Value: !Ref DataPipelineInputBucket
+
+  OutputBucketName:
+    Description: Name of the output S3 bucket
+    Value: !Ref DataPipelineOutputBucket
+
+  InputBucketArn:
+    Description: ARN of the input S3 bucket
+    Value: !GetAtt DataPipelineInputBucket.Arn
+
+  OutputBucketArn:
+    Description: ARN of the output S3 bucket
+    Value: !GetAtt DataPipelineOutputBucket.Arn

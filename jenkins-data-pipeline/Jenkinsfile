@@ -1,0 +1,84 @@
+// Jenkins Pipeline for AWS Data Pipeline Deployment
+// Implements Infrastructure as Code using SAM (Serverless Application Model)
+
+pipeline {
+    agent any
+    
+    environment {
+        AWS_REGION = 'us-west-2'
+        STACK_NAME = 'data-pipeline-stack'
+        ENVIRONMENT = 'dev'
+        S3_DEPLOY_BUCKET = 'jenkins-sam-artifacts-195275680578-20251125123539'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '🔄 Checking out code from GitHub...'
+                checkout scm
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                echo '🏗️ Building SAM application...'
+                sh '''
+                    echo "Installing dependencies..."
+                    pip install -r src/requirements.txt
+                    
+                    echo "Running SAM build..."
+                    sam build --use-container
+                '''
+            }
+        }
+        
+        stage('Package') {
+            steps {
+                echo '📦 Packaging application...'
+                sh '''
+                    sam package \
+                        --output-template-file packaged.yaml \
+                        --s3-bucket ${S3_DEPLOY_BUCKET}
+                '''
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                echo '🚀 Deploying to AWS...'
+                sh '''
+                    sam deploy \
+                        --template-file packaged.yaml \
+                        --stack-name ${STACK_NAME} \
+                        --region ${AWS_REGION} \
+                        --capabilities CAPABILITY_IAM \
+                        --parameter-overrides Environment=${ENVIRONMENT}
+                '''
+            }
+        }
+        
+        stage('Post-Deploy Validation') {
+            steps {
+                echo '✅ Validating deployment...'
+                sh '''
+                    echo "Stack outputs:"
+                    aws cloudformation describe-stacks \
+                        --stack-name ${STACK_NAME} \
+                        --region ${AWS_REGION} \
+                        --query 'Stacks[0].Outputs' \
+                        --output table
+                '''
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo '✅ Pipeline completed successfully!'
+            echo 'Your data pipeline is ready for use.'
+        }
+        failure {
+            echo '❌ Pipeline failed. Check logs above.'
+        }
+    }
+}

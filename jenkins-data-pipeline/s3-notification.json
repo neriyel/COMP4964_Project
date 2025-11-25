@@ -1,0 +1,24 @@
+{
+    "LambdaFunctionConfigurations": [
+        {
+            "LambdaFunctionArn": "arn:aws:lambda:us-west-2:195275680578:function:csv-processor-dev",
+            "Events": [
+                "s3:ObjectCreated:*"
+            ],
+            "Filter": {
+                "Key": {
+                    "FilterRules": [
+                        {
+                            "Name": "prefix",
+                            "Value": "uploads/"
+                        },
+                        {
+                            "Name": "suffix",
+                            "Value": ".csv"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

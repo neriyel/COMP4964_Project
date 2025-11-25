@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Data Pipeline using Lambda and S3 - Infrastructure as Code
+Globals:
+  Function:
+    Timeout: 300
+    Runtime: python3.9
+    Environment:
+      Variables:
+        OUTPUT_BUCKET:
+          Ref: DataPipelineOutputBucket
+        PROCESSED_PREFIX: processed/
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+    - dev
+    - prod
+    Description: Environment name
+Resources:
+  DataPipelineInputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: data-pipeline-input-${AWS::AccountId}-${Environment}
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    Metadata:
+      SamResourceId: DataPipelineInputBucket
+  DataPipelineOutputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: data-pipeline-output-${AWS::AccountId}-${Environment}
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    Metadata:
+      SamResourceId: DataPipelineOutputBucket
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+      - PolicyName: S3Access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:GetObject
+            - s3:ListBucket
+            Resource:
+            - Fn::GetAtt:
+              - DataPipelineInputBucket
+              - Arn
+            - Fn::Sub: ${DataPipelineInputBucket.Arn}/*
+          - Effect: Allow
+            Action:
+            - s3:PutObject
+            - s3:ListBucket
+            Resource:
+            - Fn::GetAtt:
+              - DataPipelineOutputBucket
+              - Arn
+            - Fn::Sub: ${DataPipelineOutputBucket.Arn}/*
+    Metadata:
+      SamResourceId: LambdaExecutionRole
+  CSVProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: csv-processor-${Environment}
+      CodeUri: s3://jenkins-sam-artifacts-195275680578-20251125123539/66ba485a8dcd56bb5e5c6b5db75a4cb9
+      Handler: lambda_handler.lambda_handler
+      Role:
+        Fn::GetAtt:
+        - LambdaExecutionRole
+        - Arn
+      Timeout: 300
+      MemorySize: 512
+      Environment:
+        Variables:
+          INPUT_BUCKET:
+            Ref: DataPipelineInputBucket
+          OUTPUT_BUCKET:
+            Ref: DataPipelineOutputBucket
+    Metadata:
+      SamResourceId: CSVProcessorFunction
+  S3InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: CSVProcessorFunction
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceArn:
+        Fn::Sub: arn:aws:s3:::${DataPipelineInputBucket}
+    Metadata:
+      SamResourceId: S3InvokePermission
+Outputs:
+  CSVProcessorFunctionArn:
+    Description: ARN of the CSV Processor Lambda function
+    Value:
+      Fn::GetAtt:
+      - CSVProcessorFunction
+      - Arn
+  InputBucketName:
+    Description: Name of the input S3 bucket
+    Value:
+      Ref: DataPipelineInputBucket
+  OutputBucketName:
+    Description: Name of the output S3 bucket
+    Value:
+      Ref: DataPipelineOutputBucket
+  InputBucketArn:
+    Description: ARN of the input S3 bucket
+    Value:
+      Fn::GetAtt:
+      - DataPipelineInputBucket
+      - Arn
+  OutputBucketArn:
+    Description: ARN of the output S3 bucket
+    Value:
+      Fn::GetAtt:
+      - DataPipelineOutputBucket
+      - Arn

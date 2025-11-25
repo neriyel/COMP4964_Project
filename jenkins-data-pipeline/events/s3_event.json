@@ -1,0 +1,35 @@
+{
+    "Records": [
+        {
+            "eventVersion": "2.1",
+            "eventSource": "aws:s3",
+            "awsRegion": "us-east-1",
+            "eventTime": "2024-05-25T14:30:22.000Z",
+            "eventName": "ObjectCreated:Put",
+            "userIdentity": {
+                "principalId": "EXAMPLE"
+            },
+            "requestParameters": {
+                "sourceIPAddress": "127.0.0.1"
+            },
+            "responseElements": {
+                "x-amz-request-id": "EXAMPLE",
+                "x-amz-id-2": "EXAMPLE"
+            },
+            "s3": {
+                "bucket": {
+                    "name": "data-pipeline-input-123456789-dev",
+                    "ownerIdentity": {
+                        "principalId": "EXAMPLE"
+                    },
+                    "arn": "arn:aws:s3:::data-pipeline-input-123456789-dev"
+                },
+                "object": {
+                    "key": "uploads/sample_data.csv",
+                    "size": 1024,
+                    "eTag": "0123456789abcdef0123456789abcdef"
+                }
+            }
+        }
+    ]
+}
