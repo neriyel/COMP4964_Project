@@ -46,19 +46,17 @@ pipeline {
             steps {
                 echo '🚀 Deploying to AWS...'
                 sh '''
-                    echo "Installing AWS CLI v2..."
-                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                    unzip -q awscliv2.zip
-                    ./aws/install > /dev/null 2>&1 || true
+                    echo "Installing boto3 (AWS SDK for Python)..."
+                    pip3 install --quiet boto3 2>/dev/null || pip install --quiet boto3 || true
                     
-                    echo "Deploying CloudFormation stack..."
-                    aws cloudformation deploy \
-                        --template-file packaged.yaml \
-                        --stack-name ${STACK_NAME} \
-                        --region ${AWS_REGION} \
-                        --capabilities CAPABILITY_IAM \
-                        --parameter-overrides Environment=${ENVIRONMENT}
-                    echo "✅ Deployment initiated!"
+                    echo "Running CloudFormation deployment..."
+                    python3 jenkins-data-pipeline/deploy.py \
+                        packaged.yaml \
+                        ${STACK_NAME} \
+                        ${AWS_REGION} \
+                        ${ENVIRONMENT}
+                    
+                    echo "✅ Deployment command sent!"
                 '''
             }
         }
@@ -68,13 +66,30 @@ pipeline {
                 echo '✅ Validating deployment...'
                 sh '''
                     echo "Checking CloudFormation stack status..."
-                    sleep 10
-                    echo "Stack outputs:"
-                    /usr/local/bin/aws cloudformation describe-stacks \
-                        --stack-name ${STACK_NAME} \
-                        --region ${AWS_REGION} \
-                        --query 'Stacks[0].Outputs' \
-                        --output table || echo "Stack still deploying..."
+                    sleep 5
+                    
+                    python3 << 'PYTHON_EOF'
+import boto3
+import json
+from botocore.exceptions import ClientError
+
+try:
+    cf = boto3.client('cloudformation', region_name='${AWS_REGION}')
+    stacks = cf.describe_stacks(StackName='${STACK_NAME}')
+    stack = stacks['Stacks'][0]
+    
+    print(f"Stack Status: {stack['StackStatus']}")
+    if 'Outputs' in stack:
+        print("\nStack Outputs:")
+        for output in stack['Outputs']:
+            print(f"  {output['OutputKey']}: {output['OutputValue']}")
+    else:
+        print("\nNo outputs found in stack (stack may still be deploying)")
+except ClientError as e:
+    print(f"Stack not found or error: {e}")
+except Exception as e:
+    print(f"Error: {e}")
+PYTHON_EOF
                 '''
             }
         }
