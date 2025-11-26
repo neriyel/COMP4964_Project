@@ -46,6 +46,12 @@ pipeline {
             steps {
                 echo '🚀 Deploying to AWS...'
                 sh '''
+                    echo "Installing AWS CLI v2..."
+                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                    unzip -q awscliv2.zip
+                    ./aws/install > /dev/null 2>&1 || true
+                    
+                    echo "Deploying CloudFormation stack..."
                     aws cloudformation deploy \
                         --template-file packaged.yaml \
                         --stack-name ${STACK_NAME} \
@@ -61,10 +67,10 @@ pipeline {
             steps {
                 echo '✅ Validating deployment...'
                 sh '''
-                    echo "Waiting for stack to complete..."
+                    echo "Checking CloudFormation stack status..."
                     sleep 10
                     echo "Stack outputs:"
-                    aws cloudformation describe-stacks \
+                    /usr/local/bin/aws cloudformation describe-stacks \
                         --stack-name ${STACK_NAME} \
                         --region ${AWS_REGION} \
                         --query 'Stacks[0].Outputs' \
