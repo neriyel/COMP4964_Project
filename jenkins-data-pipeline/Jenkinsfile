@@ -23,11 +23,8 @@ pipeline {
             steps {
                 echo '🏗️ Building SAM application...'
                 sh '''
-                    echo "Installing dependencies..."
-                    pip install -r src/requirements.txt
-                    
                     echo "Running SAM build..."
-                    sam build --use-container
+                    sam build
                 '''
             }
         }
