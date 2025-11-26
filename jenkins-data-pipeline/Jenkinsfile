@@ -2,13 +2,19 @@
 // Implements Infrastructure as Code using SAM (Serverless Application Model)
 
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'public.ecr.aws/sam/build-python3.9:latest'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
     
     environment {
         AWS_REGION = 'us-west-2'
         STACK_NAME = 'data-pipeline-stack'
         ENVIRONMENT = 'dev'
         S3_DEPLOY_BUCKET = 'jenkins-sam-artifacts-195275680578-20251125123539'
+        AWS_DEFAULT_REGION = 'us-west-2'
     }
     
     stages {
@@ -23,7 +29,7 @@ pipeline {
             steps {
                 echo '🏗️ Building SAM application...'
                 sh '''
-                    echo "Running SAM build..."
+                    sam --version
                     sam build
                 '''
             }
