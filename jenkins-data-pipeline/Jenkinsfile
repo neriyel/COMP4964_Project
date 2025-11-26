@@ -46,8 +46,12 @@ pipeline {
             steps {
                 echo '🚀 Deploying to AWS...'
                 sh '''
+                    echo "Installing dependencies..."
+                    apt-get update > /dev/null 2>&1
+                    apt-get install -y python3 python3-pip > /dev/null 2>&1 || true
+                    
                     echo "Installing boto3 (AWS SDK for Python)..."
-                    pip3 install --quiet boto3 2>/dev/null || pip install --quiet boto3 || true
+                    python3 -m pip install --quiet boto3 2>/dev/null || pip3 install --quiet boto3 || true
                     
                     echo "Running CloudFormation deployment..."
                     python3 jenkins-data-pipeline/deploy.py \
