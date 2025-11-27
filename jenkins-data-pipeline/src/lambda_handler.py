@@ -12,6 +12,8 @@ import io
 import os
 from datetime import datetime
 import logging
+from openpyxl import Workbook
+from openpyxl.styles import Font
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -132,7 +134,7 @@ def process_csv_data(data):
 
 def write_csv_to_s3(data, output_key):
     """
-    Write processed data to output S3 bucket as CSV with bold headers
+    Write processed data to output S3 bucket as Excel with bold headers
     """
     try:
         if not data:
@@ -141,28 +143,38 @@ def write_csv_to_s3(data, output_key):
 
         output_bucket = os.environ["OUTPUT_BUCKET"]
 
-        # Convert list of dicts back to CSV format
-        output = io.StringIO()
+        # ========== DEMO: BOLD HEADERS FEATURE ==========
+        # Create Excel workbook with bold headers
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Data"
+        
         fieldnames = list(data[0].keys())
-
-        # ========== DEMO: BOLD HEADERS FEATURE ==========
-        bold_headers = [f"**{header}**" for header in fieldnames]
-        output.write(",".join(bold_headers) + "\n")
-        # ========== END DEMO BLOCK ==========
-
+        
+        # Write bold headers
+        for col_idx, header in enumerate(fieldnames, 1):
+            cell = ws.cell(row=1, column=col_idx)
+            cell.value = header
+            cell.font = Font(bold=True)
+        
         # Write data rows
-        writer = csv.DictWriter(output, fieldnames=fieldnames)
-        # ========== DEMO: BOLD HEADERS FEATURE ==========
-        # writer.writeheader()
+        for row_idx, row in enumerate(data, 2):
+            for col_idx, header in enumerate(fieldnames, 1):
+                ws.cell(row=row_idx, column=col_idx).value = row[header]
+        
+        # Save to bytes
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
         # ========== END DEMO BLOCK ==========
-        writer.writerows(data)
 
-        # Upload to S3
+        # Upload to S3 as .xlsx instead of .csv
+        output_key = output_key.replace('.csv', '.xlsx')
         s3_client.put_object(
             Bucket=output_bucket,
             Key=output_key,
             Body=output.getvalue(),
-            ContentType="text/csv",
+            ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 
         logger.info(
@@ -170,5 +182,5 @@ def write_csv_to_s3(data, output_key):
         )
 
     except Exception as e:
-        logger.error(f"Error writing CSV to S3: {str(e)}")
+        logger.error(f"Error writing Excel to S3: {str(e)}")
         raise
