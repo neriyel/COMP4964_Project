@@ -1,11 +1,5 @@
 Name,Email,Age,Department,Salary
-Alice Chen,alice.chen@company.com,33,Engineering,88000
-  Bob Lee  ,bob.lee@company.com,29,Sales,71000
-Charlie White,charlie.white@company.com,45,Finance,96000
-Diana Prince,diana.prince@company.com,31,Engineering,82000
-Eve Robinson,eve.robinson@company.com,26,Marketing,69000
-Frank Miller,frank.miller@company.com,39,HR,70000
-Grace Lee,grace.lee@company.com,48,Management,112000
-Henry Zhang,henry.zhang@company.com,35,Engineering,87000
-Iris Kim,iris.kim@company.com,28,Sales,74000
-Jack Davis,jack.davis@company.com,42,Finance,98000
+     alice chen  ,alice.chen@company.com,33,Engineering,88000
+bob lee,      bob.lee@company.com  ,29,Sales,71000
+charlie white,charlie.white@company.com,45,Finance,96000
+diana prince,diana.prince@company.com,31,Engineering,82000

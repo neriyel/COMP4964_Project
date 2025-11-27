@@ -3,6 +3,8 @@ CSV Data Pipeline Lambda Function
 Processes incoming CSV files from S3, cleans and transforms data, outputs processed CSV
 """
 
+# test comment
+
 import json
 import boto3
 import csv
@@ -130,7 +132,7 @@ def process_csv_data(data):
 
 def write_csv_to_s3(data, output_key):
     """
-    Write processed data to output S3 bucket as CSV
+    Write processed data to output S3 bucket as CSV with bold headers
     """
     try:
         if not data:
@@ -142,9 +144,17 @@ def write_csv_to_s3(data, output_key):
         # Convert list of dicts back to CSV format
         output = io.StringIO()
         fieldnames = list(data[0].keys())
-        writer = csv.DictWriter(output, fieldnames=fieldnames)
 
-        writer.writeheader()
+        # ========== DEMO: BOLD HEADERS FEATURE ==========
+        bold_headers = [f"**{header}**" for header in fieldnames]
+        output.write(",".join(bold_headers) + "\n")
+        # ========== END DEMO BLOCK ==========
+
+        # Write data rows
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        # ========== DEMO: BOLD HEADERS FEATURE ==========
+        # writer.writeheader()
+        # ========== END DEMO BLOCK ==========
         writer.writerows(data)
 
         # Upload to S3
