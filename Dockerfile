@@ -7,8 +7,8 @@ RUN apt-get update && \
     apt-get install -y docker.io python3 python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
-# Install pytest
-RUN pip3 install pytest
+# Install pytest (allow system-wide install)
+RUN pip3 install --break-system-packages pytest
 
 # Add jenkins user to docker group
 RUN usermod -aG docker jenkins
