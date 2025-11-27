@@ -8,7 +8,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install pytest and AWS SDK (allow system-wide install)
-RUN pip3 install --break-system-packages pytest boto3 botocore openpyxl
+RUN pip3 install --break-system-packages pytest boto3 botocore
 
 # Add jenkins user to docker group
 RUN usermod -aG docker jenkins

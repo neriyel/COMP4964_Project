@@ -2,4 +2,4 @@ Name,Email,Age,Department,Salary
      alice chen  ,alice.chen@company.com,33,Engineering,88000
 bob lee,      bob.lee@company.com  ,29,Sales,71000
 charlie white,charlie.white@company.com,45,Finance,96000
-diana prince,diana.prince@company.com,31,Engineering,82000
+                          diana prince,diana.prince@company.com,31,Engineering,82000
