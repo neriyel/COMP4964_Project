@@ -7,8 +7,8 @@ RUN apt-get update && \
     apt-get install -y docker.io python3 python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
-# Install pytest (allow system-wide install)
-RUN pip3 install --break-system-packages pytest
+# Install pytest and AWS SDK (allow system-wide install)
+RUN pip3 install --break-system-packages pytest boto3 botocore
 
 # Add jenkins user to docker group
 RUN usermod -aG docker jenkins
