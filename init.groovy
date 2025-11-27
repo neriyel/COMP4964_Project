@@ -5,8 +5,7 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy
 
 def instance = Jenkins.getInstance()
 
-// Set up security if not already configured
-if (instance.getSecurityRealm() instanceof hudson.security.SecurityRealm.DEFAULT) {
+try {
     println("Setting up Jenkins security...")
     
     def realm = new HudsonPrivateSecurityRealm(false)
@@ -17,7 +16,7 @@ if (instance.getSecurityRealm() instanceof hudson.security.SecurityRealm.DEFAULT
     instance.setAuthorizationStrategy(strategy)
     
     instance.save()
-    println("✓ Jenkins initialized with admin user")
-} else {
-    println("✓ Jenkins security already configured")
+    println("✓ Jenkins initialized with admin user: admin / admin123")
+} catch (Exception e) {
+    println("✓ Jenkins security already configured or error: ${e.message}")
 }
