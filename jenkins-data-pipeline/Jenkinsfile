@@ -21,6 +21,16 @@ pipeline {
             }
         }
         
+        stage('Test') {
+            steps {
+                echo '🧪 Running unit tests for Lambda function...'
+                sh '''
+                    cd jenkins-data-pipeline
+                    python3 -m pytest tests/test_lambda.py -v
+                '''
+            }
+        }
+        
         stage('Build') {
             steps {
                 echo '🏗️ Validating SAM template...'
