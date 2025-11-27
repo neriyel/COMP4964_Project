@@ -2,10 +2,13 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-# Install Docker CLI
+# Install Docker CLI, Python, and pip
 RUN apt-get update && \
-    apt-get install -y docker.io && \
+    apt-get install -y docker.io python3 python3-pip && \
     rm -rf /var/lib/apt/lists/*
+
+# Install pytest
+RUN pip3 install pytest
 
 # Add jenkins user to docker group
 RUN usermod -aG docker jenkins
