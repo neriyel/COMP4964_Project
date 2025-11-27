@@ -146,14 +146,14 @@ def write_csv_to_s3(data, output_key):
         fieldnames = list(data[0].keys())
 
         # ========== DEMO: BOLD HEADERS FEATURE ==========
-        bold_headers = [f"**{header}**" for header in fieldnames]
-        output.write(",".join(bold_headers) + "\n")
+        # bold_headers = [f"**{header}**" for header in fieldnames]
+        # output.write(",".join(bold_headers) + "\n")
         # ========== END DEMO BLOCK ==========
 
         # Write data rows
         writer = csv.DictWriter(output, fieldnames=fieldnames)
         # ========== DEMO: BOLD HEADERS FEATURE ==========
-        # writer.writeheader()
+        writer.writeheader()
         # ========== END DEMO BLOCK ==========
         writer.writerows(data)
 
