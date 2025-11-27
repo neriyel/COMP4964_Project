@@ -4,6 +4,7 @@ Processes incoming CSV files from S3, cleans and transforms data, outputs proces
 """
 
 # test comment
+# test comment again
 
 import json
 import boto3
@@ -132,7 +133,7 @@ def process_csv_data(data):
 
 def write_csv_to_s3(data, output_key):
     """
-    Write processed data to output S3 bucket as CSV with bold headers
+    Write processed data to output S3 bucket.
     """
     try:
         if not data:
