@@ -85,50 +85,50 @@ def read_csv_from_s3(bucket, key):
         raise
 
 
-# def process_csv_data(data):
-#     """
-#     Process and clean the CSV data:
-#     - Remove duplicates
-#     - Remove empty rows
-#     - Trim whitespace
-#     - Standardize data
-#     - Remove rows with missing values
-#     """
-#     if not data:
-#         return []
+def process_csv_data(data):
+    """
+    Process and clean the CSV data:
+    - Remove duplicates
+    - Remove empty rows
+    - Trim whitespace
+    - Standardize data
+    - Remove rows with missing values
+    """
+    if not data:
+        return []
 
-#     cleaned_data = []
+    cleaned_data = []
 
-#     for row in data:
-#         # Skip empty rows
-#         if not any(row.values()):
-#             continue
+    for row in data:
+        # Skip empty rows
+        if not any(row.values()):
+            continue
 
-#         # Clean row: trim whitespace and standardize
-#         cleaned_row = {}
-#         for key, value in row.items():
-#             if value is not None:
-#                 cleaned_row[key.strip()] = value.strip()
-#             else:
-#                 cleaned_row[key.strip()] = ""
+        # Clean row: trim whitespace and standardize
+        cleaned_row = {}
+        for key, value in row.items():
+            if value is not None:
+                cleaned_row[key.strip()] = value.strip()
+            else:
+                cleaned_row[key.strip()] = ""
 
-#         # Skip rows with missing required fields (columns)
-#         if all(cleaned_row.values()):
-#             cleaned_data.append(cleaned_row)
+        # Skip rows with missing required fields (columns)
+        if all(cleaned_row.values()):
+            cleaned_data.append(cleaned_row)
 
-#     # Remove duplicates while preserving order
-#     seen = set()
-#     unique_data = []
-#     for row in cleaned_data:
-#         row_tuple = tuple(sorted(row.items()))
-#         if row_tuple not in seen:
-#             seen.add(row_tuple)
-#             unique_data.append(row)
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_data = []
+    for row in cleaned_data:
+        row_tuple = tuple(sorted(row.items()))
+        if row_tuple not in seen:
+            seen.add(row_tuple)
+            unique_data.append(row)
 
-#     logger.info(
-#         f"Cleaned data: {len(data)} input rows → {len(unique_data)} output rows"
-#     )
-#     return unique_data
+    logger.info(
+        f"Cleaned data: {len(data)} input rows → {len(unique_data)} output rows"
+    )
+    return unique_data
 
 
 def write_csv_to_s3(data, output_key):
