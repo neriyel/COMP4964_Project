@@ -65,23 +65,23 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
 
 
-def read_csv_from_s3(bucket, key):
-    """
-    Read CSV file from S3 bucket and return as list of dictionaries
-    """
-    try:
-        response = s3_client.get_object(Bucket=bucket, Key=key)
-        csv_content = response["Body"].read().decode("utf-8")
+# def read_csv_from_s3(bucket, key):
+#     """
+#     Read CSV file from S3 bucket and return as list of dictionaries
+#     """
+#     try:
+#         response = s3_client.get_object(Bucket=bucket, Key=key)
+#         csv_content = response["Body"].read().decode("utf-8")
 
-        reader = csv.DictReader(io.StringIO(csv_content))
-        data = list(reader)
+#         reader = csv.DictReader(io.StringIO(csv_content))
+#         data = list(reader)
 
-        logger.info(f"Read {len(data)} rows from {key}")
-        return data
+#         logger.info(f"Read {len(data)} rows from {key}")
+#         return data
 
-    except Exception as e:
-        logger.error(f"Error reading CSV from S3: {str(e)}")
-        raise
+#     except Exception as e:
+#         logger.error(f"Error reading CSV from S3: {str(e)}")
+#         raise
 
 
 def process_csv_data(data):
