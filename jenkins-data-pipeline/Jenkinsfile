@@ -16,14 +16,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo '🔄 Checking out code from GitHub...'
+                echo 'Checking out code from GitHub...'
                 checkout scm
             }
         }
         
         stage('Test') {
             steps {
-                echo '🧪 Running unit tests for Lambda function...'
+                echo 'Running unit tests for Lambda function...'
                 sh '''
                     cd jenkins-data-pipeline
                     python3 -m pytest tests/test_lambda.py -v
@@ -33,7 +33,7 @@ pipeline {
         
         stage('Build') {
             steps {
-                echo '🏗️ Validating SAM template...'
+                echo 'Validating SAM template...'
                 sh '''
                     echo "Checking template.yaml exists..."
                     ls -la jenkins-data-pipeline/template.yaml
@@ -44,7 +44,7 @@ pipeline {
         
         stage('Package') {
             steps {
-                echo '📦 Preparing for deployment...'
+                echo ' Preparing for deployment...'
                 sh '''
                     echo "Using pre-built template..."
                     cp jenkins-data-pipeline/template.yaml ./packaged.yaml
@@ -55,7 +55,7 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                echo '🚀 Deploying to AWS...'
+                echo ' Deploying to AWS...'
                 sh '''
                     echo "========================================="
                     echo "CloudFormation Stack Deployment"
@@ -67,7 +67,7 @@ pipeline {
                     echo ""
                     echo "Template size: $(wc -c < packaged.yaml) bytes"
                     echo ""
-                    echo "✅ Deployment configuration prepared!"
+                    echo " Deployment configuration prepared!"
                     echo ""
                     echo "NOTE: In a production environment, this would deploy via:"
                     echo "  aws cloudformation deploy --template-file packaged.yaml \\"
@@ -81,35 +81,35 @@ pipeline {
         
         stage('Post-Deploy Validation') {
             steps {
-                echo '✅ Pipeline Summary'
+                echo ' Pipeline Summary'
                 sh '''
                     echo ""
                     echo "========================================="
                     echo "Jenkins Pipeline Execution Summary"
                     echo "========================================="
-                    echo "✅ Stage 1: Checkout"
+                    echo " Stage 1: Checkout"
                     echo "   • Repository: https://github.com/neriyel/COMP4964_Project.git"
                     echo "   • Branch: main"
                     echo "   • Status: SUCCESS"
                     echo ""
-                    echo "✅ Stage 2: Build"
+                    echo " Stage 2: Build"
                     echo "   • Template validation: SUCCESS"
                     echo "   • File: jenkins-data-pipeline/template.yaml"
                     echo "   • Status: SUCCESS"
                     echo ""
-                    echo "✅ Stage 3: Package"
+                    echo " Stage 3: Package"
                     echo "   • Template prepared: packaged.yaml"
                     echo "   • Size: $(wc -c < packaged.yaml) bytes"
                     echo "   • Status: SUCCESS"
                     echo ""
-                    echo "✅ Stage 4: Deploy"
+                    echo " Stage 4: Deploy"
                     echo "   • Stack Name: ${STACK_NAME}"
                     echo "   • Region: ${AWS_REGION}"
                     echo "   • Environment: ${ENVIRONMENT}"
                     echo "   • Status: READY"
                     echo ""
                     echo "========================================="
-                    echo "Pipeline Completed Successfully! ✅"
+                    echo "Pipeline Completed Successfully! "
                     echo "========================================="
                 '''
             }
@@ -118,11 +118,11 @@ pipeline {
     
     post {
         success {
-            echo '✅ Pipeline completed successfully!'
+            echo ' Pipeline completed successfully!'
             echo 'Your data pipeline is ready for use.'
         }
         failure {
-            echo '❌ Pipeline failed. Check logs above.'
+            echo ' Pipeline failed. Check logs above.'
         }
     }
 }

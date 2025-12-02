@@ -3,9 +3,7 @@ CSV Data Pipeline Lambda Function
 Processes incoming CSV files from S3, cleans and transforms data, outputs processed CSV
 """
 
-# test comment
-# test comment again
-# new comment 
+# test
 
 import json
 import boto3
